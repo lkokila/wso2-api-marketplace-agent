@@ -1,0 +1,56 @@
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+/* Assistant replies are rendered from Markdown. */
+.markdown > :first-child {
+  margin-top: 0;
+}
+
+.markdown > :last-child {
+  margin-bottom: 0;
+}
+
+.markdown pre {
+  background: #1f2430;
+  color: #e6e9ef;
+  padding: 12px 14px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 0.85rem;
+}
+
+.markdown code {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.9em;
+}
+
+.markdown :not(pre) > code {
+  background: rgba(0, 0, 0, 0.06);
+  padding: 1px 5px;
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+
+.markdown table {
+  border-collapse: collapse;
+  display: block;
+  overflow-x: auto;
+}
+
+.markdown th,
+.markdown td {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 4px 10px;
+  text-align: left;
+}
+
+.markdown h1,
+.markdown h2,
+.markdown h3 {
+  font-size: 1.05rem;
+  margin: 1em 0 0.4em;
+}

@@ -1,0 +1,108 @@
+# Curated subset of the Devportal REST API (v3) exposed to the agent as MCP tools.
+# Each entry selects one operation from the product's devportal-api.yaml and
+# overrides its operationId (the tool name) and description (what the LLM reads).
+tools:
+  # --- Discovery (read) ---
+  - name: search_apis
+    path: /apis
+    method: get
+    description: >-
+      Search the API catalogue. `query` takes ONE keyword; a multi-word query
+      matches nothing. A bare keyword matches API names only (e.g. "pizza").
+      Prefix it to search elsewhere: "tag:food", "description:order". Wildcards
+      are allowed ("pay*"). Omit `query` to list every API. Returns a paged
+      list of APIs with id, name, version, context and description.
+  - name: get_api
+    path: /apis/{apiId}
+    method: get
+    description: >-
+      Get full details of one API by its id: description, gateway endpoint
+      URLs, security schemes and business info. Its `tiers` field is the
+      authoritative list of subscription tiers this API offers.
+  - name: get_api_definition
+    path: /apis/{apiId}/swagger
+    method: get
+    description: >-
+      Get the OpenAPI definition of an API. Use this to explain the resources,
+      parameters and payloads of an API or to produce sample requests. A
+      resource may have no documented request or response schema.
+  - name: list_api_documents
+    path: /apis/{apiId}/documents
+    method: get
+    description: List the documents (how-tos, samples, references) attached to an API.
+  - name: list_mcp_servers
+    path: /mcp-servers
+    method: get
+    description: >-
+      Search the MCP servers published in the catalogue. `query` follows the
+      same rules as search_apis: one keyword, optionally prefixed with `tag:`
+      or `description:`; omit it to list every MCP server.
+
+  # --- Applications & subscriptions (read) ---
+  - name: list_applications
+    path: /applications
+    method: get
+    description: List the current user's applications. An application holds subscriptions and credentials.
+  - name: get_application
+    path: /applications/{applicationId}
+    method: get
+    description: Get one application of the current user, including its throttling tier and key state.
+  - name: list_subscriptions
+    path: /subscriptions
+    method: get
+    description: >-
+      List subscriptions. Provide exactly one of `applicationId` (subscriptions
+      of an application) or `apiId` (the user's subscriptions to an API).
+  - name: list_throttling_policies
+    path: /throttling-policies/{policyLevel}
+    method: get
+    description: >-
+      List every throttling policy defined on the server, with its limits.
+      `policyLevel` is `application` (tiers usable when creating an
+      application) or `subscription`. This is the server-wide list, not the
+      tiers of a particular API; use get_api for those, and this tool only to
+      look up the limits of a named tier.
+  - name: get_subscription
+    path: /subscriptions/{subscriptionId}
+    method: get
+    description: Get one subscription by its id, including the API, the application and the tier.
+  - name: list_application_keys
+    path: /applications/{applicationId}/oauth-keys
+    method: get
+    description: >-
+      List the OAuth key sets (production and sandbox) of an application:
+      consumer key, grant types and state. Use it to check whether keys
+      already exist. The consumer secret is not retrievable after generation.
+
+  # --- Actions (write) ---
+  - name: create_application
+    path: /applications
+    method: post
+    description: >-
+      Create a new application for the current user. Requires `name` and
+      `throttlingPolicy` (an application-level policy, e.g. "Unlimited").
+  - name: subscribe_to_api
+    path: /subscriptions
+    method: post
+    description: >-
+      Subscribe an application to an API or MCP server. Requires
+      `applicationId`, `apiId` and `throttlingPolicy` (one of the tiers that
+      API offers, from get_api).
+  - name: unsubscribe_from_api
+    path: /subscriptions/{subscriptionId}
+    method: delete
+    description: >-
+      Remove a subscription by its id (from list_subscriptions). The
+      application loses access to that API.
+  - name: generate_application_keys
+    path: /applications/{applicationId}/generate-keys
+    method: post
+    description: >-
+      Generate the OAuth consumer key and secret for an application. Requires
+      `keyType` ("PRODUCTION" or "SANDBOX") and `grantTypesToBeSupported`
+      (default ["client_credentials"]); set `keyManager` to "Resident Key
+      Manager" unless told otherwise. Fails if keys of that type already
+      exist; check with list_application_keys first. The result includes a
+      first access token.
+  # generate-token is deliberately not exposed: it requires the consumer secret, which
+  # the server reveals only once (at key generation) and the agent never sees.

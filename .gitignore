@@ -1,0 +1,21 @@
+# Local-only state: credentials, tokens, captured responses
+.local/
+.env
+.env.*
+!.env.example
+
+# Ballerina
+target/
+Config.toml
+Dependencies.toml.bak
+
+# Node
+node_modules/
+dist/
+build/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.log
